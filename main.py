@@ -14,17 +14,19 @@ INF = 999999999
 
 class Problem(object):
   def __init__(self, m, n, p, W, T, U, L):
-    self.m = m
-    self.n = n
-    self.p = p
-    self.W = W
-    self.T = T
-    self.U = U
-    self.L = L
-    self.Q = set(tuple(t) for t in T)
-    self.q = len(self.Q)
-    self.QL = {}
-    self.getQL()
+    self.m = m #items
+    self.n = n #total rankings
+    self.p = p #properties
+    self.W = W # value_matrix
+    self.T = T # Type matrix for each item, list of p numbers. 
+    self.U = U # Upper bound constraints matrix
+    self.L = L # Lower bound constraints matrix
+    self.Q = tuple(set(tuple(t) for t in T)) # Q is the tuple of distinct types
+    self.q = len(self.Q) # number of distinct types
+    self.QL = {} # it contains for each distinct type, the sorted list of items having that type, 
+    self.getQL() # this functions fills the QL dictionary.
+
+# Prints the components of the constrained ranking maximisation problem.
   def printProblem(self):
       print(self.T[0])
       print('No. of items = ', self.m)
@@ -54,8 +56,8 @@ class Problem(object):
   #   # returns true if the given tuple of (s1, s2, ..., sq) is with in L and U constraints
   #   # and si are not exceeding the size of QL[i]
   def check_constraint(self, s):
-
-        for i in range(P.q):
+        return True
+        for i  in range(P.q):
             #print('debug ', s[i])
             #print('debug ', self.QL[i])
             if s[i] < 0 or s[i] >= len(self.QL.get(s, [])):
@@ -97,34 +99,93 @@ P = loadProblem('input1.txt')
 P.printProblem()
 
 
-#seq = {}, key = 1 to n, value = tuples with P.q elements with sum equal to key.
-seq = seq.getSeq(P.n, P.q)
-
+##seq = {}, key = 1 to n, value = tuples with P.q elements with sum equal to key.
+#seq = seq.getSeq(P.n, P.q)
+s = []
+for k, v in P.QL.items():
+    s.append(len(v));
+print(s)
 #initialising dp,
 dp = {}
-for k, v in seq.items():
-    for s in v:
-        dp[s] = -INF
+#fills all possible s in dp
+seq.printseq(s, dp)
+seq = {}
 
-
+# print(dp)
+# print(len(dp))
+for k, v in dp.items():
+    v = -INF
+    tuplesum = sum(k)
+    seq[tuplesum] = seq.get(tuplesum, [])
+    seq[tuplesum].append(k)
+print(seq)
 dp[tuple([0] * P.q)] = 0
 temp = []
-for k, v in dp.items():
-    temp.append(k)
-    print(k)
-temp.sort()
-print('temp ')
-for i in temp:
-    print(i)
+# for k, v in dp.items():
+#     temp.append(k)
+#     print(k)
+# temp.sort()
+# print('temp ')
+# for i in temp:
+#     print(i)
+#
+ranking  = [-1] * P.n
+tempsum = 0;
+parent = {} # stores for every s, stores the parent s' where it came from, and what item is placed at last s.
 
-for k in range(1, P.n):
+parent[tuple([0]) * P.q] = [[0] * P.q, -1]
+#ranking from
+for k in range(1, P.n + 1):
+    print('for k = ', k)
+    Max = -INF
+    c = -1
     for s in seq[k]:
-        if P.check_constraint(s) and QL.get(s, 0) != 0:
+        print('     s = ', s)
+        if P.check_constraint(s):
             for l in range(P.q):
+                print('         l = ', l)
                 cur = s[:l] + tuple([s[l] - 1]) + s[l + 1 :]
-                w = W[QL[Q[l]]][s[l]]
-                dp[s] = max(dp[s], dp[cur] + w )
+                print('         cur', cur)
+
+                if dp.get(cur, -INF) > -INF :
+                    row = P.QL[P.Q[l]][s[l] - 1]
+                    col = k - 1
+                    print('         row', row)
+                    print('         col', col)
+                    w = P.W[row][col]
+                    print('         w', w)
+
+                    #dp[s] = max(dp[s], dp[cur] + w )
+                    if dp[s] < dp[cur] + w:
+                        dp[s] = dp[cur] + w
+                        parent[s] = [cur, row]
+                    print('             dp[s] = , dp[cur]', dp[s], dp[cur])
+                    if Max < dp[s]:
+                        Max = dp[s]
+                        c = row
+                        ranking[k - 1] = row
+
+
+                    #print('parent', parent)
+
+
+    tempsum = Max
 ans = -INF
+finalseq = tuple()
 for i, v in  dp.items():
-    ans = max(ans, v)
+    if ans < v:
+        ans = v;
+        finalseq = i
 print(ans)
+print(finalseq)
+ranking = []
+print(tempsum)
+temprank = tuple(finalseq[:])
+#print(parent)
+c = 0
+
+while temprank != tuple([0]*P.q) and c < 10:
+    print(temprank, parent[temprank][1])
+    temprank = tuple(parent[temprank][0])
+
+    c+=1
