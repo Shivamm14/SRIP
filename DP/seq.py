@@ -1,5 +1,5 @@
 # given a list s of q numbers [s1, s2, s3 , ... , sq],
-# print  all possible ways to chose q elements from each q places between 0 to sl.
+# print  all possible ways to chose q elements from each q places between 0 to sl and fills those seq as key in memo.
 def printseq(s, memo):
     for i in s:
         if i < 0:
