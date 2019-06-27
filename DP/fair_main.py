@@ -5,6 +5,8 @@ Based on the theorem 3.1 of the following paper:
 'Ranking with fairness constrained'
 Link: https://arxiv.org/pdf/1704.06840.pdf
 
+USAGE: python3 fair_main.py input.txt
+
 Code written by: Shivam Mishra
 '''
 import seq
